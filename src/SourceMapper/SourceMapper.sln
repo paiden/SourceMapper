@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31512.422
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceMapper", "SourceMapper\SourceMapper.csproj", "{6A69D83D-4E13-4E7B-985E-8BF8251A6317}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceMapper.Tests", "..\..\test\SourceMapper.Tests\SourceMapper.Tests.csproj", "{350BF6F8-C91B-452D-A568-142B74D5D231}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".sln", ".sln", "{1E55731F-8E8A-41CD-AD8C-AAFEB4EF574A}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A69D83D-4E13-4E7B-985E-8BF8251A6317}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A69D83D-4E13-4E7B-985E-8BF8251A6317}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A69D83D-4E13-4E7B-985E-8BF8251A6317}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A69D83D-4E13-4E7B-985E-8BF8251A6317}.Release|Any CPU.Build.0 = Release|Any CPU
+		{350BF6F8-C91B-452D-A568-142B74D5D231}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{350BF6F8-C91B-452D-A568-142B74D5D231}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{350BF6F8-C91B-452D-A568-142B74D5D231}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{350BF6F8-C91B-452D-A568-142B74D5D231}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D33A7B3F-9B3F-4011-9B62-94C64E545F5D}
+	EndGlobalSection
+EndGlobal
