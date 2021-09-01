@@ -1,8 +1,16 @@
-﻿
-using System;
-namespace X
+﻿namespace SourceMapper.Tests
 {
-    public class CloningContext
+    public static class NoDefConstDtoSourceMapperExtensions
     {
+        public static NoDefConstDto Clone(this NoDefConstDto source)
+        {
+            var clone = new NoDefConstDto(source.X)
+            {
+                
+            };
+
+            return clone;
+        }
     }
 }
+

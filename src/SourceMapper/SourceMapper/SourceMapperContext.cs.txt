@@ -1,21 +1,18 @@
 ﻿namespace SourceMapper
 {
-    public class CloneBuilder<T>
+    public sealed class MapBuilder
     {
-    }
+        private MapBuilder()
+        {
+        }
 
-    public class MapBuilder<F>
-    {
-        public void To<T>() { }
-    }
-
-    public class SourceMapperContext<T>
-    {
+        public MapBuilder MakeCloneable<T>() { return this; }
     }
 
     public abstract class SourceMapperContext
     {
-        public static SourceMapperContext<T> Cloneable<T>()
-            => new();
+        internal const string ConfigureName = nameof(Configure);
+
+        protected abstract void Configure(MapBuilder builder);
     }
 }

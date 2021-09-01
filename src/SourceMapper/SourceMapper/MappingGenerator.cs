@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using CodegenCS;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using SourceMapper.Generators;
+using SourceMapper.Parsers;
 
 namespace SourceMapper
 {
@@ -26,44 +27,48 @@ namespace SourceMapper
 
             // Write the genreated code based on target configured contexts
 
+
+            var extensionsWriter = new CodegenTextWriter();
             foreach (var ctx in receiver.Candidates)
             {
-                ProcessContext(ctx);
+                ProcessContext(context.Compilation, ctx, extensionsWriter);
             }
-            var writer = new CodegenTextWriter();
-            GenerateFile(writer, receiver);
-            context.AddSource("SourceMapperExtensions", SourceText.From(writer.GetContents(), Encoding.UTF8));
+            context.AddSource("SourceMapperExtensions", SourceText.From(extensionsWriter.GetContents(), Encoding.UTF8));
         }
 
-        private static void GenerateFile(CodegenTextWriter w, FindMapablesSyntaxReceiver syntaxReceiver)
+        private static void ProcessContext(Compilation compilation, ClassDeclarationSyntax context, CodegenTextWriter writer)
         {
-            w.Write($@"
-using System;");
-            w.WithCBlock("namespace X", w =>
+            var parseResult = ContextParser.Parse(compilation, context);
+            foreach (var t in parseResult.ConfiguredTypes)
             {
-                foreach (var cds in syntaxReceiver.Candidates)
-                    GenerateClass(w, cds);
-            });
+                GenerateExtensionsClass(writer, parseResult, t);
+            }
         }
 
-        private static void ProcessContext(ClassDeclarationSyntax context)
+        private static void GenerateExtensionsClass(
+            CodegenTextWriter writer,
+            ContextParseResult parseResult,
+            TypeInfo targetType)
         {
-        }
+            writer.WithCBlock($"namespace {targetType.Type.ContainingNamespace.ToDisplayString()}", ExtensionClassDeclaration);
+            writer.WriteLine();
 
-        private static void GenerateClass(CodegenTextWriter w, ClassDeclarationSyntax cds)
-        {
-            w.WithCBlock($"public class {cds.Identifier.Text}", w =>
+            void ExtensionClassDeclaration(CodegenTextWriter w)
             {
-                // Hello you
-            });
+                w.WithCBlock($"public static class {targetType.Type.Name}SourceMapperExtensions", ExtensionClassBody);
+            }
+
+            void ExtensionClassBody(CodegenTextWriter writer)
+            {
+                CloneableCodeGen.Generate(writer, parseResult, targetType);
+            }
         }
 
         public void Initialize(GeneratorInitializationContext context)
         {
             AppDomain.CurrentDomain.AssemblyResolve += HandleAppDomainResolve;
 
-
-            if (true)
+            if (false)
             {
                 Debugger.Launch();
             }
@@ -73,11 +78,11 @@ using System;");
             context.RegisterForSyntaxNotifications(() => new FindMapablesSyntaxReceiver());
         }
 
-        private Assembly HandleAppDomainResolve(object sender, ResolveEventArgs args)
+        private System.Reflection.Assembly HandleAppDomainResolve(object sender, ResolveEventArgs args)
         {
             if (args.Name.Contains("CodegenCS"))
             {
-                return Assembly.LoadFrom(@"C:\temp\CodegenCS.dll");
+                return System.Reflection.Assembly.LoadFrom(@"C:\temp\CodegenCS.dll");
             }
 
             return null;
