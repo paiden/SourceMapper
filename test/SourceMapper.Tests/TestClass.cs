@@ -42,4 +42,16 @@
         }
     }
 
+
+    public class IgnorePropDto
+    {
+        public string CloneMe { get; set; } = "Ignored";
+
+        public string IgnoreMe { get; set; } = "Ignored";
+
+        public IgnorePropDto()
+        {
+
+        }
+    }
 }

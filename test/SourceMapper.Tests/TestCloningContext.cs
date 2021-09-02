@@ -2,13 +2,16 @@
 {
     internal class TestCloningContext : SourceMapperContext
     {
-        protected override void Configure(MapBuilder mapBuilder)
+        protected override void Configure(MappingConfig config)
         {
-            mapBuilder
+            config
                 //.MakeCloneable<TestClassDto>()
                 //.MakeCloneable<VisiblityDto>()
                 //.MakeCloneable<ReadonlyDto>()
-                .MakeCloneable<NoDefConstDto>();
+                //.MakeCloneable<NoDefConstDto>()
+                .Make<IgnorePropDto>(it => it
+                    .Cloneable(cloning => cloning
+                        .Ignore(x => x.IgnoreMe)));
         }
     }
 }

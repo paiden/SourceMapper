@@ -57,7 +57,7 @@ namespace SourceMapper.Parsers
                     constructionProps.Add(found);
                 }
 
-                if (props.Count == constr.Parameters.Length)
+                if (constructionProps.Count == constr.Parameters.Length)
                 {
                     return constr;
                 }

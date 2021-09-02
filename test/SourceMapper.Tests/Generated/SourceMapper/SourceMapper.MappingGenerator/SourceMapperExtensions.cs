@@ -1,12 +1,12 @@
 ﻿namespace SourceMapper.Tests
 {
-    public static class NoDefConstDtoSourceMapperExtensions
+    public static class IgnorePropDtoSourceMapperExtensions
     {
-        public static NoDefConstDto Clone(this NoDefConstDto source)
+        public static IgnorePropDto Clone(this IgnorePropDto source)
         {
-            var clone = new NoDefConstDto(source.X)
+            var clone = new IgnorePropDto()
             {
-                
+                CloneMe = source.CloneMe,
             };
 
             return clone;

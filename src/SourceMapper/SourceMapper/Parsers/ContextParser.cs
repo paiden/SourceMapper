@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,60 +9,42 @@ namespace SourceMapper.Parsers
     {
 
 
-        public static ContextParseResult Parse(Compilation compilation, ClassDeclarationSyntax cds)
+        public static void Parse(
+            ParseResult parseResult,
+            ParseContext parseContext,
+            ClassDeclarationSyntax sourceMapperContext)
         {
-            if (false)
-            {
-                Debugger.Launch();
-            }
-
-            var model = compilation.GetSemanticModel(cds.SyntaxTree);
-            var members = cds.DescendantNodes().OfType<MethodDeclarationSyntax>();
-
-            var result = new ContextParseResult();
+            var members = sourceMapperContext.DescendantNodes().OfType<MethodDeclarationSyntax>();
 
             foreach (var m in members)
             {
-                ParseMember(result, model, m);
+                ParseMember(parseResult, parseContext, m);
             }
-
-            return result;
         }
 
-        private static void ParseMember(ContextParseResult result, SemanticModel model, MethodDeclarationSyntax mds)
+        private static void ParseMember(ParseResult result, ParseContext parseContext, MethodDeclarationSyntax mds)
         {
-            var symbol = model.GetDeclaredSymbol(mds) as IMethodSymbol;
+            var symbol = parseContext.SemanticModel.GetDeclaredSymbol(mds) as IMethodSymbol;
             if (symbol.Name == SourceMapperContext.ConfigureName)
             {
-                ParseConfigure(result, model, mds, symbol); ;
+                ParseConfigure(result, parseContext, mds, symbol); ;
             }
         }
 
         private static void ParseConfigure(
-            ContextParseResult result,
-            SemanticModel model,
+            ParseResult result,
+            ParseContext parseContext,
             MethodDeclarationSyntax syntax,
             IMethodSymbol symbol)
         {
             var cloneables = new List<TypeInfo>();
 
-            var memberAccess = syntax.DescendantNodes().OfType<MemberAccessExpressionSyntax>();
-            foreach (var ma in memberAccess)
+            var makeInvocations = syntax.DescendantNodes().OfType<MemberAccessExpressionSyntax>()
+                .Where(mas => mas.Name.Identifier.ValueText == nameof(MappingConfig.Make));
+
+            foreach (var make in makeInvocations)
             {
-                if (ma.Name.Identifier.ValueText == nameof(MapBuilder.MakeCloneable))
-                {
-                    var gen = ma.Name as GenericNameSyntax;
-                    var cloneableTypeSyntax = gen.TypeArgumentList.Arguments[0];
-                    var cloneableType = model.GetTypeInfo(cloneableTypeSyntax);
-
-                    if (!result.ParseInfos.ContainsKey(cloneableType))
-                    {
-                        var typeParseInfo = TypeInfoParser.Parse(cloneableType);
-                        result.AddTypeInfo(cloneableType, typeParseInfo);
-                    }
-
-                    result.AddCloneable(cloneableType);
-                }
+                MakeParser.Parse(result, parseContext, make);
             }
         }
     }

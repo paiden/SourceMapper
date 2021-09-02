@@ -2,6 +2,7 @@
 using System.Text;
 using CodegenCS;
 using Microsoft.CodeAnalysis;
+using SourceMapper.Config;
 using SourceMapper.Extensions;
 using SourceMapper.Parsers;
 
@@ -9,23 +10,23 @@ namespace SourceMapper.Generators
 {
     internal static class CloneableCodeGen
     {
-        public static void Generate(CodegenTextWriter writer, ContextParseResult result, TypeInfo cloneableType)
+        public static void Generate(CodegenTextWriter writer, ParseResult result, TypeInfo cloneableType)
         {
             var cloneable = result.ParseInfos[cloneableType];
-            WriteCode(writer, cloneable);
+            var cloneableConfig = result.Cloneables[cloneableType];
+            WriteCode(writer, cloneable, cloneableConfig);
         }
 
         private static void Foo(Func<object>? c)
         {
         }
 
-        private static void WriteCode(CodegenTextWriter w, ParserTypeInfo cloneable)
+        private static void WriteCode(CodegenTextWriter w, ParserTypeInfo cloneable, CloneableConfig config)
         {
             var typeName = cloneable.TypeName;
-            w.WithCBlock($"public static {typeName} Clone(this {typeName} source)", w => CloneBody(w, cloneable));
+            w.WithCBlock($"public static {typeName} Clone(this {typeName} source)", w => CloneBody(w, cloneable, config));
 
-
-            static void CloneBody(CodegenTextWriter w, ParserTypeInfo cloneable)
+            static void CloneBody(CodegenTextWriter w, ParserTypeInfo cloneable, CloneableConfig config)
             {
                 var cloneableInfo = cloneable.GetCloneableInfo();
                 if (cloneableInfo.BestConstructor == null)
@@ -36,7 +37,7 @@ namespace SourceMapper.Generators
                 {
                     w.WriteCBlock(
                         GenerateMakeInstance(cloneableInfo),
-                        w => WritePropertyAssignments(w, cloneableInfo),
+                        w => WritePropertyAssignments(w, cloneableInfo, config),
                         ";");
                     w.WriteLine();
                     w.WriteLine($"return clone;");
@@ -50,6 +51,11 @@ namespace SourceMapper.Generators
 
             static string GenerateConstructorArgs(CloneableParserTypeInfo cloneable)
             {
+                if (cloneable.ConstructionProps.Count <= 0)
+                {
+                    return string.Empty;
+                }
+
                 var props = cloneable.ConstructionProps;
                 var sb = new StringBuilder(256);
                 foreach (var prop in props)
@@ -67,10 +73,17 @@ namespace SourceMapper.Generators
 
             static void WritePropertyAssignments(
                 CodegenTextWriter w,
-                CloneableParserTypeInfo cloneable)
+                CloneableParserTypeInfo cloneable,
+                CloneableConfig config)
             {
+
                 foreach (var p in cloneable.AssignmentProps)
                 {
+                    if (config.IsIgnored(p))
+                    {
+                        continue;
+                    }
+
                     w.EnsureEmptyLine();
                     w.Write($"{p.Name} = source.{p.Name},");
                 }

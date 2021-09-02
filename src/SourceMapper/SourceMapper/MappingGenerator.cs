@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using CodegenCS;
@@ -29,16 +28,24 @@ namespace SourceMapper
 
 
             var extensionsWriter = new CodegenTextWriter();
-            foreach (var ctx in receiver.Candidates)
+            foreach (var sourceMapperContext in receiver.Candidates)
             {
-                ProcessContext(context.Compilation, ctx, extensionsWriter);
+                var semanticModel = context.Compilation.GetSemanticModel(sourceMapperContext.SyntaxTree, ignoreAccessibility: true);
+                var parseContext = new ParseContext(context.Compilation, semanticModel);
+                var result = new ParseResult(context);
+                ProcessContext(result, parseContext, extensionsWriter, sourceMapperContext);
             }
+
             context.AddSource("SourceMapperExtensions", SourceText.From(extensionsWriter.GetContents(), Encoding.UTF8));
         }
 
-        private static void ProcessContext(Compilation compilation, ClassDeclarationSyntax context, CodegenTextWriter writer)
+        private static void ProcessContext(
+            ParseResult parseResult,
+            ParseContext parseContext,
+            CodegenTextWriter writer,
+            ClassDeclarationSyntax sourceMapperContext)
         {
-            var parseResult = ContextParser.Parse(compilation, context);
+            ContextParser.Parse(parseResult, parseContext, sourceMapperContext);
             foreach (var t in parseResult.ConfiguredTypes)
             {
                 GenerateExtensionsClass(writer, parseResult, t);
@@ -47,7 +54,7 @@ namespace SourceMapper
 
         private static void GenerateExtensionsClass(
             CodegenTextWriter writer,
-            ContextParseResult parseResult,
+            ParseResult parseResult,
             TypeInfo targetType)
         {
             writer.WithCBlock($"namespace {targetType.Type.ContainingNamespace.ToDisplayString()}", ExtensionClassDeclaration);
@@ -67,11 +74,6 @@ namespace SourceMapper
         public void Initialize(GeneratorInitializationContext context)
         {
             AppDomain.CurrentDomain.AssemblyResolve += HandleAppDomainResolve;
-
-            if (false)
-            {
-                Debugger.Launch();
-            }
 
             var dir = Environment.CurrentDirectory;
 
