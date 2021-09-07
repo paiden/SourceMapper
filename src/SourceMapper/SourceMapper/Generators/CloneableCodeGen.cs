@@ -10,23 +10,23 @@ namespace SourceMapper.Generators
 {
     internal static class CloneableCodeGen
     {
-        public static void Generate(CodegenTextWriter writer, ParseResult result, TypeInfo cloneableType)
+        public static void Generate(CodegenTextWriter writer, ParseResult parseResult, ITypeSymbol cloneableType)
         {
-            var cloneable = result.ParseInfos[cloneableType];
-            var cloneableConfig = result.Cloneables[cloneableType];
-            WriteCode(writer, cloneable, cloneableConfig);
+            var cloneable = parseResult.ParseInfos[cloneableType];
+            var cloneableConfig = parseResult.Cloneables[cloneableType];
+            WriteCode(writer, parseResult, cloneable, cloneableConfig); ;
         }
 
         private static void Foo(Func<object>? c)
         {
         }
 
-        private static void WriteCode(CodegenTextWriter w, ParserTypeInfo cloneable, CloneableConfig config)
+        private static void WriteCode(CodegenTextWriter w, ParseResult parseResult, ParserTypeInfo cloneable, CloneableConfig config)
         {
             var typeName = cloneable.TypeName;
-            w.WithCBlock($"public static {typeName} Clone(this {typeName} source)", w => CloneBody(w, cloneable, config));
+            w.WithCBlock($"public static {typeName} Clone(this {typeName} source)", w => CloneBody(w, parseResult, cloneable, config));
 
-            static void CloneBody(CodegenTextWriter w, ParserTypeInfo cloneable, CloneableConfig config)
+            static void CloneBody(CodegenTextWriter w, ParseResult parseResult, ParserTypeInfo cloneable, CloneableConfig config)
             {
                 var cloneableInfo = cloneable.GetCloneableInfo();
                 if (cloneableInfo.BestConstructor == null)
@@ -36,20 +36,20 @@ namespace SourceMapper.Generators
                 else
                 {
                     w.WriteCBlock(
-                        GenerateMakeInstance(cloneableInfo),
-                        w => WritePropertyAssignments(w, cloneableInfo, config),
+                        GenerateMakeInstance(parseResult, cloneableInfo),
+                        w => WritePropertyAssignments(w, parseResult, cloneableInfo, config),
                         ";");
                     w.WriteLine();
                     w.WriteLine($"return clone;");
                 }
             }
 
-            static string GenerateMakeInstance(CloneableParserTypeInfo cloneable)
+            static string GenerateMakeInstance(ParseResult parseResult, CloneableParserTypeInfo cloneable)
             {
-                return $"var clone = new {cloneable.TypeName}({GenerateConstructorArgs(cloneable)})";
+                return $"var clone = new {cloneable.TypeName}({GenerateConstructorArgs(parseResult, cloneable)})";
             }
 
-            static string GenerateConstructorArgs(CloneableParserTypeInfo cloneable)
+            static string GenerateConstructorArgs(ParseResult parseResult, CloneableParserTypeInfo cloneable)
             {
                 if (cloneable.ConstructionProps.Count <= 0)
                 {
@@ -62,6 +62,7 @@ namespace SourceMapper.Generators
                 {
                     sb.Append("source.")
                         .Append(prop.Name)
+                        .Append(CloneCall(parseResult, prop))
                         .Append(',')
                         .Append(' ');
                 }
@@ -73,6 +74,7 @@ namespace SourceMapper.Generators
 
             static void WritePropertyAssignments(
                 CodegenTextWriter w,
+                ParseResult parseResult,
                 CloneableParserTypeInfo cloneable,
                 CloneableConfig config)
             {
@@ -85,9 +87,13 @@ namespace SourceMapper.Generators
                     }
 
                     w.EnsureEmptyLine();
-                    w.Write($"{p.Name} = source.{p.Name},");
+                    w.Write($"{p.Name} = source.{p.Name}{CloneCall(parseResult, p)},");
                 }
+
             }
+
+            static string CloneCall(ParseResult parseResult, IPropertySymbol prop)
+                => parseResult.Cloneables.ContainsKey(prop.Type) ? ".Clone()" : string.Empty;
         }
     }
 }

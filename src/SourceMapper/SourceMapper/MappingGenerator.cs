@@ -3,10 +3,12 @@ using System.IO;
 using System.Text;
 using CodegenCS;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using SourceMapper.Generators;
 using SourceMapper.Parsers;
+using SourceMapper.Utils;
 
 namespace SourceMapper
 {
@@ -22,16 +24,19 @@ namespace SourceMapper
             var contextCodeStream = typeof(MappingGenerator).Assembly
                 .GetManifestResourceStream("SourceMapper.SourceMapperContext.cs.txt");
             var reader = new StreamReader(contextCodeStream);
-            context.AddSource("SourceMapperContext", SourceText.From(reader.ReadToEnd(), Encoding.UTF8));
+            var codeText = reader.ReadToEnd();
+            context.AddSource("SourceMapperContext", SourceText.From(codeText, Encoding.UTF8));
 
             // Write the genreated code based on target configured contexts
-
+            var myCompilation = AddSourceMapperContextToCompilation(context.Compilation, codeText);
 
             var extensionsWriter = new CodegenTextWriter();
             foreach (var sourceMapperContext in receiver.Candidates)
             {
-                var semanticModel = context.Compilation.GetSemanticModel(sourceMapperContext.SyntaxTree, ignoreAccessibility: true);
-                var parseContext = new ParseContext(context.Compilation, semanticModel);
+                DbgUtils.LaunchDebugger(true);
+                var unitSyntax = sourceMapperContext.FirstAncestorOrSelf<CompilationUnitSyntax>();
+                var semanticModel = myCompilation.GetSemanticModel(unitSyntax!.SyntaxTree);
+                var parseContext = new ParseContext(myCompilation, semanticModel);
                 var result = new ParseResult(context);
                 ProcessContext(result, parseContext, extensionsWriter, sourceMapperContext);
             }
@@ -55,14 +60,14 @@ namespace SourceMapper
         private static void GenerateExtensionsClass(
             CodegenTextWriter writer,
             ParseResult parseResult,
-            TypeInfo targetType)
+            ITypeSymbol targetType)
         {
-            writer.WithCBlock($"namespace {targetType.Type.ContainingNamespace.ToDisplayString()}", ExtensionClassDeclaration);
+            writer.WithCBlock($"namespace {targetType.ContainingNamespace.ToDisplayString()}", ExtensionClassDeclaration);
             writer.WriteLine();
 
             void ExtensionClassDeclaration(CodegenTextWriter w)
             {
-                w.WithCBlock($"public static class {targetType.Type.Name}SourceMapperExtensions", ExtensionClassBody);
+                w.WithCBlock($"public static class {targetType.Name}SourceMapperExtensions", ExtensionClassBody);
             }
 
             void ExtensionClassBody(CodegenTextWriter writer)
@@ -88,6 +93,15 @@ namespace SourceMapper
             }
 
             return null;
+        }
+
+        // It looks like source generated via the generattor themself are not part of the
+        // compilation. But we need our generated context class in the compilation so that
+        // we can resolve the configure calls correctly, so add them to it this logic
+        private static Compilation AddSourceMapperContextToCompilation(Compilation compilation, string contextCode)
+        {
+            var fullCompilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(contextCode));
+            return fullCompilation;
         }
     }
 }

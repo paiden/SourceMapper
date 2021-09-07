@@ -46,38 +46,30 @@ namespace SourceMapper.Parsers
 
         private readonly GeneratorExecutionContext executionContext;
 
-        internal void EnsureHasTypeInfo(TypeInfo makeType)
+        internal void EnsureHasTypeInfo(ITypeSymbol makeType)
         {
             if (!this.ParseInfos.ContainsKey(makeType))
             {
                 var typeParseInfo = TypeInfoParser.Parse(makeType);
-                if (typeParseInfo == null)
-                {
-                    this.Report(Diag.FailedToCreateTypeInfoSM0002, null, makeType.Type?.Name ?? "<UNKNOWN>");
-                    return;
-                }
-                else
-                {
-                    this.parseInfos.Add(makeType, typeParseInfo);
-                }
+                this.parseInfos.Add(makeType, typeParseInfo);
             }
         }
 
-        private readonly Dictionary<TypeInfo, ParserTypeInfo> parseInfos = new();
-        private readonly Dictionary<TypeInfo, CloneableConfig> cloneables = new();
+        private readonly Dictionary<ITypeSymbol, ParserTypeInfo> parseInfos = new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ITypeSymbol, CloneableConfig> cloneables = new(SymbolEqualityComparer.Default);
 
-        public Dictionary<TypeInfo, ParserTypeInfo> ParseInfos => parseInfos;
+        public Dictionary<ITypeSymbol, ParserTypeInfo> ParseInfos => parseInfos;
 
-        public IReadOnlyDictionary<TypeInfo, CloneableConfig> Cloneables => this.cloneables;
+        public IReadOnlyDictionary<ITypeSymbol, CloneableConfig> Cloneables => this.cloneables;
 
-        public IEnumerable<TypeInfo> ConfiguredTypes => this.ParseInfos.Keys;
+        public IEnumerable<ITypeSymbol> ConfiguredTypes => this.ParseInfos.Keys;
 
         public ParseResult(GeneratorExecutionContext generatorContext)
         {
             this.executionContext = generatorContext;
         }
 
-        public void AddCloneable(TypeInfo type, CloneableConfig config)
+        public void AddCloneable(ITypeSymbol type, CloneableConfig config)
         {
             if (!this.ParseInfos.ContainsKey(type))
             {

@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SourceMapper.Config;
+using SourceMapper.Utils;
 
 namespace SourceMapper.Parsers
 {
@@ -10,85 +11,44 @@ namespace SourceMapper.Parsers
         public static void Parse(
             ParseResult parseResult,
             ParseContext parseContext,
-            TypeInfo cloneType,
-            MemberAccessExpressionSyntax cloneableCall)
+            ITypeSymbol cloneType,
+            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) cloneableCall)
         {
             var cloneableConfig = new CloneableConfig();
+            var (syntax, symbol) = cloneableCall;
+            var ignoreCalls = ParseUtils.FindCallsOfMethodWithName(parseContext, syntax, nameof(CloneConfig<object>.Ignore));
 
-            var cloneableConfigLambda = GetConfigLambda(cloneableCall);
-            if (cloneableConfigLambda == null)
+            foreach (var ign in ignoreCalls)
             {
-                parseResult.Report(ParseResult.Diag.SM9999GenericError, cloneableCall.GetLocation());
-                return;
+                ParseIgnoreCall(parseResult, cloneableConfig, cloneType, ign);
             }
-
-            ParseCloneableConfig(parseResult, cloneableConfig, parseContext, cloneType, cloneableConfigLambda);
 
             parseResult.AddCloneable(cloneType, cloneableConfig);
         }
 
-        private static void ParseCloneableConfig(
+        private static void ParseIgnoreCall(
             ParseResult parseResult,
             CloneableConfig clonableConfig,
-            ParseContext parseContext,
-            TypeInfo cloneType,
-            SimpleLambdaExpressionSyntax cloneableConfigLambda)
+            ITypeSymbol cloneableType,
+            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) ignoreCall)
         {
-            var ignoreCalls = cloneableConfigLambda.DescendantNodes().OfType<MemberAccessExpressionSyntax>()
-                .Where(mas => mas.Name.Identifier.ValueText.Equals(nameof(CloneConfig<object>.Ignore)));
 
-            foreach (var call in ignoreCalls)
-            {
-                ParseIgnoreCall(parseResult, clonableConfig, cloneType, call);
-            }
-        }
-
-        private static void ParseIgnoreCall(ParseResult parseResult, CloneableConfig clonableConfig, TypeInfo cloneableType, MemberAccessExpressionSyntax ignoreCall)
-        {
-            // Resolving symbols for lambdas does not work well... get the proeprty by name from the type
-            var ignoreConfigLambda = GetConfigLambda(ignoreCall);
-            if (ignoreConfigLambda == null)
-            {
-                parseResult.Report(ParseResult.Diag.SM9999GenericError, ignoreCall.GetLocation(), "ign_nolocation");
-                return;
-            }
-
-            var identifiers = ignoreConfigLambda.DescendantNodes()
+            var ignoreIdentifier = ignoreCall.syntax.DescendantNodes()
                 .OfType<IdentifierNameSyntax>()
-                .Skip(1); // Skip the lambda paramter identifer
+                .Last(); // The last identifier is the prop name.... maybe add nicer parse logic in future but for now this works.
 
-            foreach (var id in identifiers)
+            var ignoreProp = cloneableType.GetMembers(ignoreIdentifier.Identifier.ValueText)
+                .OfType<IPropertySymbol>()
+                .SingleOrDefault();
+
+            if (ignoreProp == null)
             {
-                var ignoreProp = cloneableType.Type!.GetMembers(id.Identifier.ValueText)
-                    .OfType<IPropertySymbol>()
-                    .SingleOrDefault();
-
-                if (ignoreProp == null)
-                {
-                    parseResult.Report(ParseResult.Diag.SM9999GenericError, null, "This should never happen");
-                }
-                else
-                {
-                    clonableConfig.AddIgnoredProperty(ignoreProp);
-                }
+                parseResult.Report(ParseResult.Diag.SM9999GenericError, null, $"This should never happen: member '{ignoreIdentifier.Identifier.ValueText}' not found.");
             }
-        }
-
-        private static SimpleLambdaExpressionSyntax? GetConfigLambda(MemberAccessExpressionSyntax call)
-        {
-            if (call.Parent is not InvocationExpressionSyntax invocation)
+            else
             {
-                return null;
+                clonableConfig.AddIgnoredProperty(ignoreProp);
             }
-
-            if (invocation.ArgumentList.Arguments.Count <= 0)
-            {
-                return null;
-            }
-
-            return invocation.ArgumentList.DescendantNodes()
-                .OfType<SimpleLambdaExpressionSyntax>()
-                .FirstOrDefault();
         }
     }
 }

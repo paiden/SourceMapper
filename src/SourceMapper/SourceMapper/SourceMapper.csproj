@@ -28,7 +28,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-2.final" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="$(PkgCodegenCS)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visble="false" />
   </ItemGroup>
 

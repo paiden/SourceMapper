@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SourceMapper.Utils;
 
 namespace SourceMapper.Parsers
 {
@@ -14,7 +15,8 @@ namespace SourceMapper.Parsers
             ParseContext parseContext,
             ClassDeclarationSyntax sourceMapperContext)
         {
-            var members = sourceMapperContext.DescendantNodes().OfType<MethodDeclarationSyntax>();
+            var members = sourceMapperContext.DescendantNodes()
+                .OfType<MethodDeclarationSyntax>();
 
             foreach (var m in members)
             {
@@ -25,7 +27,7 @@ namespace SourceMapper.Parsers
         private static void ParseMember(ParseResult result, ParseContext parseContext, MethodDeclarationSyntax mds)
         {
             var symbol = parseContext.SemanticModel.GetDeclaredSymbol(mds) as IMethodSymbol;
-            if (symbol.Name == SourceMapperContext.ConfigureName)
+            if (symbol != null && symbol.Name == SourceMapperContext.ConfigureName)
             {
                 ParseConfigure(result, parseContext, mds, symbol); ;
             }
@@ -37,15 +39,41 @@ namespace SourceMapper.Parsers
             MethodDeclarationSyntax syntax,
             IMethodSymbol symbol)
         {
+            DbgUtils.LaunchDebugger();
             var cloneables = new List<TypeInfo>();
 
-            var makeInvocations = syntax.DescendantNodes().OfType<MemberAccessExpressionSyntax>()
-                .Where(mas => mas.Name.Identifier.ValueText == nameof(MappingConfig.Make));
+            var makeCalls = ParseUtils.FindCallsOfMethodWithName(parseContext, syntax, nameof(MappingConfig.Make));
 
-            foreach (var make in makeInvocations)
+            foreach (var make in makeCalls)
             {
                 MakeParser.Parse(result, parseContext, make);
             }
+        }
+
+        private static IReadOnlyList<(InvocationExpressionSyntax syntax, IMethodSymbol symbol)>
+            GetAllMakeCalls(ParseContext parseContext, MethodDeclarationSyntax configureDeclaration)
+        {
+            var dn = configureDeclaration.DescendantNodes().ToList();
+            // Oh man getting all fluent calls of a methis is really not that easy... try to use the symbosl to find them
+            var calls = configureDeclaration.DescendantNodes()
+                .OfType<InvocationExpressionSyntax>()
+                .Select(n => (node: n, symbol: TryGetMethodSymbolInfo(parseContext, n)))
+                .Where(tpl => tpl.symbol != null && tpl.symbol.Name.Equals(nameof(MappingConfig.Make)))
+                .ToList();
+
+            static IMethodSymbol? TryGetMethodSymbolInfo(ParseContext context, SyntaxNode n)
+            {
+                try
+                {
+                    return context.SemanticModel.GetSymbolInfo(n).Symbol as IMethodSymbol;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            return calls;
         }
     }
 }

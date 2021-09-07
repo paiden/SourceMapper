@@ -22,6 +22,8 @@ namespace SourceMapper
         }
 
         public MappingConfig Make<T>(Action<MakeConfig<T>> it) { return this; }
+
+        public void Foo() { }
     }
 
     public abstract class SourceMapperContext

@@ -5,25 +5,20 @@ namespace SourceMapper.Parsers
 {
     public class TypeInfoParser
     {
-        public static ParserTypeInfo? Parse(TypeInfo type)
+        public static ParserTypeInfo Parse(ITypeSymbol type)
         {
-            if (type.Type == null)
-            {
-                return null;
-            }
-
-            var properties = type.Type.GetMembers()
+            var properties = type.GetMembers()
                 .OfType<IPropertySymbol>()
                 .Where(pi => !pi.IsReadOnly)
                 .Where(pi => !pi.IsStatic)
                 .Where(pi => pi.DeclaredAccessibility != Accessibility.Private);
 
-            var constructors = type.Type.GetMembers()
+            var constructors = type.GetMembers()
                 .OfType<IMethodSymbol>()
                 .Where(m => m.DeclaredAccessibility != Accessibility.Private)
                 .Where(m => m.MethodKind == MethodKind.Constructor);
 
-            return new ParserTypeInfo(type.Type.Name, properties, constructors);
+            return new ParserTypeInfo(type.Name, properties, constructors);
         }
     }
 }

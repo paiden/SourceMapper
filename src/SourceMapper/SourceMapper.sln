@@ -9,12 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceMapper.Tests", "..\..
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".sln", ".sln", "{1E55731F-8E8A-41CD-AD8C-AAFEB4EF574A}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\.editorconfig = ..\..\.editorconfig
 		nuget.config = nuget.config
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1631197D-054D-4875-8FE0-2C664C1041E9}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Global

@@ -1,0 +1,11 @@
+{
+  "Prop": "Cloned",
+  "Inner": {
+    "CloneMe": "Cloned",
+    "IgnoreMe": "Ignored"
+  },
+  "InnerGetOnly": {
+    "CloneMe": "Cloned",
+    "IgnoreMe": "Ignored"
+  }
+}
