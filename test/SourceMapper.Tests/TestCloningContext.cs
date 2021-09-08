@@ -14,6 +14,7 @@
             config
                 .Make<WithCloneablePropertyDto>(it => it
                     .Cloneable());
+
         }
     }
 }

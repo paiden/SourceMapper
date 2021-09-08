@@ -56,11 +56,11 @@ namespace SourceMapper.Parsers
         }
 
         private readonly Dictionary<ITypeSymbol, ParserTypeInfo> parseInfos = new(SymbolEqualityComparer.Default);
-        private readonly Dictionary<ITypeSymbol, CloneableConfig> cloneables = new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, CloneableConfig>> mappings = new Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, CloneableConfig>>(SymbolEqualityComparer.Default);
 
         public Dictionary<ITypeSymbol, ParserTypeInfo> ParseInfos => parseInfos;
 
-        public IReadOnlyDictionary<ITypeSymbol, CloneableConfig> Cloneables => this.cloneables;
+        public IReadOnlyDictionary<ITypeSymbol, Dictionary<ITypeSymbol, CloneableConfig>> Mappings => this.mappings;
 
         public IEnumerable<ITypeSymbol> ConfiguredTypes => this.ParseInfos.Keys;
 
@@ -76,7 +76,13 @@ namespace SourceMapper.Parsers
                 this.EnsureHasTypeInfo(type);
             }
 
-            this.cloneables.Add(type, config);
+            if (!this.mappings.TryGetValue(type, out var targetTypes))
+            {
+                targetTypes = new Dictionary<ITypeSymbol, CloneableConfig>(SymbolEqualityComparer.Default);
+                this.mappings.Add(type, targetTypes);
+            }
+
+            targetTypes.Add(type, config);
         }
 
         public void Report(DiagnosticDescriptor descriptor, Location? location, params object[] msgArgs)

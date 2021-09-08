@@ -13,8 +13,12 @@ namespace SourceMapper.Generators
         public static void Generate(CodegenTextWriter writer, ParseResult parseResult, ITypeSymbol cloneableType)
         {
             var cloneable = parseResult.ParseInfos[cloneableType];
-            var cloneableConfig = parseResult.Cloneables[cloneableType];
-            WriteCode(writer, parseResult, cloneable, cloneableConfig); ;
+            var mappings = parseResult.Mappings[cloneableType];
+
+            foreach (var map in mappings)
+            {
+                WriteCode(writer, parseResult, cloneable, map.Value);
+            }
         }
 
         private static void Foo(Func<object>? c)
@@ -93,7 +97,7 @@ namespace SourceMapper.Generators
             }
 
             static string CloneCall(ParseResult parseResult, IPropertySymbol prop)
-                => parseResult.Cloneables.ContainsKey(prop.Type) ? ".Clone()" : string.Empty;
+                => parseResult.Mappings.ContainsKey(prop.Type) ? ".Clone()" : string.Empty;
         }
     }
 }
