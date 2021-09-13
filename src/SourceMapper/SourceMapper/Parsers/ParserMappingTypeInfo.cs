@@ -33,7 +33,9 @@ namespace SourceMapper.Parsers
         {
             var constructionProps = new List<IPropertySymbol>(16);
             var best = FindBestCloneConstructor(info.Constructors, info.Properties, ref constructionProps);
-            var assignmentProps = info.Properties.Except(constructionProps).ToList();
+            var assignmentProps = info.Properties
+                .Where(p => p.SetMethod != null && p.SetMethod.DeclaredAccessibility != Accessibility.Private)
+                .Except(constructionProps).ToList();
             return new ParserMappingTypeInfo(info, best, constructionProps, assignmentProps);
         }
 

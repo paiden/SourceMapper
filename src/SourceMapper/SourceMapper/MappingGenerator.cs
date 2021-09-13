@@ -37,7 +37,7 @@ namespace SourceMapper
                 var unitSyntax = sourceMapperContext.FirstAncestorOrSelf<CompilationUnitSyntax>();
                 var semanticModel = myCompilation.GetSemanticModel(unitSyntax!.SyntaxTree);
                 var parseContext = new ParseContext(myCompilation, semanticModel);
-                var result = new ParseResult(context);
+                var result = new ParseResult(context, sourceMapperContext.Identifier.ValueText);
                 ProcessContext(result, parseContext, extensionsWriter, sourceMapperContext);
             }
 

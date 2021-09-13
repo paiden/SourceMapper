@@ -18,7 +18,7 @@ namespace SourceMapper.Codegen
             void ExtensionClassDeclaration(CodegenTextWriter w)
             {
                 w.WithCBlock(
-                    beforeBlock: $"public static class {makeType.Name}SourceMapperExtensions",
+                    beforeBlock: $"public static class {makeType.Name}{parseResult.ContextName}SourceMapperExtensions",
                     innerBlockAction: ExtensionClassBody);
             }
 

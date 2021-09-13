@@ -59,5 +59,18 @@ namespace SourceMapper.Tests
             // Assert
             cloned.ShouldMatchSnapshot();
         }
+
+        [Fact]
+        public void WhenMakeInstanceFuncSet_UsesMakeInstanceFunc()
+        {
+            // Arrange
+            var src = new LambdaActivatorObj("Not created by custom Lambda!!!") { ShouldBeCloned = "This was cloned" };
+
+            // Act
+            var clone = src.Clone();
+
+            // Assert
+            clone.ShouldMatchSnapshot();
+        }
     }
 }

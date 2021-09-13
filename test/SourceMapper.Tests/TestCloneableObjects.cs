@@ -13,12 +13,12 @@
     {
         public static TestClassDto Source = new TestClassDto()
         {
-            F = "Original F",
-            D = 1.0,
+            F = 2.0f,
+            D = 3.0,
             S = "Original S",
         };
 
-        public string F { get; set; }
+        public float F { get; set; }
 
         public double D { get; set; }
 
@@ -97,7 +97,44 @@
 
     public class LambdaPostProcObj
     {
-        public string Prop { get; set; } = "Ogiginal";
+        public string Prop { get; set; } = "Original";
     }
 
+    public class FuncActivatorObj
+    {
+        public string Prop { get; private set; } = "Original Make Instance";
+
+        public string ShouldBeCloned { get; set; }
+
+        public FuncActivatorObj(string pval)
+        {
+            this.Prop = pval;
+        }
+
+        public static FuncActivatorObj Create(FuncActivatorObj _)
+        {
+            return new FuncActivatorObj("Custom Make Instance Func");
+        }
+    }
+
+    public class LambdaActivatorObj
+    {
+        public string Prop { get; private set; } = "Not invoked by custom Lambda";
+
+        public string ShouldBeCloned { get; set; } = "Original Prop Value";
+
+        public LambdaActivatorObj(string pval)
+        {
+            this.Prop = pval;
+        }
+
+    }
+}
+
+namespace SomeCustomNamespace
+{
+    public class ClassInSomeNamespace
+    {
+        public string Prop { get; set; } = "Not Cloned";
+    }
 }

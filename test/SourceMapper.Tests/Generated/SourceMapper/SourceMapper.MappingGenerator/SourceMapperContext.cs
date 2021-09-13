@@ -6,23 +6,24 @@ namespace SourceMapper
 {
     internal delegate void PostProcessDelegate<TTarget, in TSource>(ref TTarget target, TSource source);
 
-    internal interface IMapConfig<T, TTarget, Self>
+    internal interface IMapConfig<TSource, TTarget, Self>
     {
-        Self Ignore<P>(Func<T, P> propSelector);
-        Self PostProcess(PostProcessDelegate<TTarget, T> postProcess);
+        Self Activator(Func<TSource, TTarget> activator);
+        Self Ignore<P>(Func<TSource, P> propSelector);
+        Self PostProcess(PostProcessDelegate<TTarget, TSource> postProcess);
     }
 
-    internal sealed class MapToConfig<T, Target> : IMapConfig<T, Target, MapToConfig<T, Target>>
+    internal sealed class MapToConfig<TSource, TTarget> : IMapConfig<TSource, TTarget, MapToConfig<TSource, TTarget>>
     {
-        public MapToConfig<T, Target> Ignore<P>(Func<T, P> propertySelector) { return this; }
-
-        public MapToConfig<T, Target> PostProcess(PostProcessDelegate<Target, T> postProcess) { return this; }
+        public MapToConfig<TSource, TTarget> Activator(Func<TSource, TTarget> activator) { return this; }
+        public MapToConfig<TSource, TTarget> Ignore<P>(Func<TSource, P> propertySelector) { return this; }
+        public MapToConfig<TSource, TTarget> PostProcess(PostProcessDelegate<TTarget, TSource> postProcess) { return this; }
     }
 
     internal sealed class CloneConfig<T> : IMapConfig<T, T, CloneConfig<T>>
     {
+        public CloneConfig<T> Activator(Func<T, T> activator) { return this; }
         public CloneConfig<T> Ignore<P>(Func<T, P> propertySelector) { return this; }
-
         public CloneConfig<T> PostProcess(PostProcessDelegate<T, T> postProcess) { return this; }
     }
 

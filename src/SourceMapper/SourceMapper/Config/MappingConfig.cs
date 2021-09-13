@@ -8,7 +8,14 @@ namespace SourceMapper.Config
     {
         private readonly HashSet<IPropertySymbol> ignoredProps = new(SymbolEqualityComparer.Default);
 
+        public MappingConfig()
+        {
+
+        }
+
         public ArgumentSyntax? PostProcess { get; set; }
+
+        public ArgumentSyntax? Activator { get; set; }
 
         public bool IsIgnored(IPropertySymbol prop)
             => this.ignoredProps.Contains(prop);

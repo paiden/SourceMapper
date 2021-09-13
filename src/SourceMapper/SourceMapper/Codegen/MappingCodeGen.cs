@@ -4,7 +4,6 @@ using CodegenCS;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SourceMapper.Config;
-using SourceMapper.Extensions;
 using SourceMapper.Parsers;
 
 namespace SourceMapper.Codegen
@@ -19,39 +18,65 @@ namespace SourceMapper.Codegen
             MappingConfig config)
         {
             var sourceMappingInfo = source.GetCloneableInfo();
-            if (sourceMappingInfo.BestConstructor == null)
+            if (sourceMappingInfo.BestConstructor == null && config.Activator == null)
             {
                 w.WriteLine($"#error No valid constructor for type '{sourceMappingInfo.TypeName}' found");
             }
             else
             {
-                w.WriteCBlock(
-                    GenerateMakeInstance(parseResult, sourceMappingInfo),
-                    w => WritePropertyAssignments(w, parseResult, sourceMappingInfo, config),
-                    ";");
+                w.WriteLine(GenerateMakeInstance(parseResult, config, target, sourceMappingInfo));
                 w.WriteLine();
+
+                var written = WritePropertyAssignments(w, parseResult, sourceMappingInfo, config);
+                if (written > 0)
+                {
+                    w.WriteLine();
+                }
 
                 if (config.PostProcess != null)
                 {
                     WritePostProcessing(w, config.PostProcess);
+                    w.WriteLine();
                 }
 
                 w.WriteLine($"return obj;");
             }
         }
 
-        public static string GenerateMakeInstance(ParseResult parseResult, ParserMappingTypeInfo cloneable)
+        public static string GenerateMakeInstance(
+            ParseResult parseResult,
+            MappingConfig config,
+            ParserTypeInfo target,
+            ParserMappingTypeInfo source)
         {
-            return $"var obj = new {cloneable.TypeName}({GenerateConstructorArgs(parseResult, cloneable)})";
+            if (config.Activator is ArgumentSyntax activatorArg)
+            {
+                var sb = new StringBuilder();
+                if (activatorArg.ChildNodes().FirstOrDefault() is LambdaExpressionSyntax lambda)
+                {
+                    sb.AppendLine($"Func<{source.TypeName}, {target.TypeName}> instanceCreator = {lambda};");
+                    sb.Append("var obj = instanceCreator(source);");
+                }
+                else
+                {
+                    sb.Append($"var obj = {activatorArg}(source);");
+                }
+
+                return sb.ToString();
+            }
+            else
+            {
+                return $"var obj = new {target.TypeName}({GenerateConstructorArgs(parseResult, source)});";
+            }
         }
 
-        private static void WritePropertyAssignments(
+        private static int WritePropertyAssignments(
             CodegenTextWriter w,
             ParseResult parseResult,
             ParserMappingTypeInfo cloneable,
             MappingConfig config)
         {
-
+            int written = 0;
             foreach (var p in cloneable.AssignmentProps)
             {
                 if (config.IsIgnored(p))
@@ -60,8 +85,12 @@ namespace SourceMapper.Codegen
                 }
 
                 w.EnsureEmptyLine();
-                w.Write($"{p.Name} = source.{p.Name}{CloneCloneableProps(parseResult, p)},");
+                w.Write($"obj.{p.Name} = source.{p.Name}{CloneCloneableProps(parseResult, p)};");
+                written++;
             }
+
+            w.EnsureEmptyLine();
+            return written;
         }
 
         private static string GenerateConstructorArgs(ParseResult parseResult, ParserMappingTypeInfo cloneable)
@@ -91,7 +120,7 @@ namespace SourceMapper.Codegen
             CodegenTextWriter w,
             ArgumentSyntax postProcessingArg)
         {
-            if (postProcessingArg.ChildNodes().FirstOrDefault() is ParenthesizedLambdaExpressionSyntax lambda)
+            if (postProcessingArg.ChildNodes().FirstOrDefault() is LambdaExpressionSyntax lambda)
             {
                 w.WriteLine($"var postProcess = {lambda};");
                 w.WriteLine("postProcess(ref obj, source);");
@@ -100,8 +129,6 @@ namespace SourceMapper.Codegen
             {
                 w.WriteLine($"{postProcessingArg}(ref obj, source);");
             }
-
-            w.WriteLine();
         }
 
         private static string CloneCloneableProps(ParseResult parseResult, IPropertySymbol prop)

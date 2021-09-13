@@ -32,6 +32,14 @@ namespace SourceMapper.Parsers
                 ParsePostProcessCall(parseResult, mapConfig, sourceType, pp);
             }
 
+            var activatorCalls = ParseUtils.FindCallsOfMethodWithName(
+                parseContext, syntax, nameof(IMapConfig<object, object, object>.Activator));
+
+            foreach (var ac in activatorCalls)
+            {
+                ParseActivatorCall(parseResult, mapConfig, sourceType, ac);
+            }
+
             return mapConfig;
         }
 
@@ -75,6 +83,24 @@ namespace SourceMapper.Parsers
             }
 
             mapableConfig.PostProcess = arg.Arguments[0];
+        }
+
+        private static void ParseActivatorCall(
+            ParseResult parseResult,
+            MappingConfig mapableConfig,
+            ITypeSymbol mapableType,
+            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) activatorCall)
+        {
+            var (syntax, symbol) = activatorCall;
+            var arg = syntax.DescendantNodes().OfType<ArgumentListSyntax>().FirstOrDefault();
+
+            if (arg == null || arg.Arguments.Count <= 0)
+            {
+                parseResult.Report(ParseResult.Diag.SM9999GenericError, syntax.GetLocation(), "Could not find activator func.");
+                return;
+            }
+
+            mapableConfig.Activator = arg.Arguments[0];
         }
     }
 }

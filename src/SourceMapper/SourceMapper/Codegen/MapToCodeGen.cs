@@ -16,7 +16,7 @@ namespace SourceMapper.Generators
         {
             var srcType = sourceType.TypeName;
             var tgtType = targetType.TypeName;
-            w.WithCBlock($"public static {srcType} MapTo<T>(this {srcType} source) where T : {tgtType}", w => MapToBody(w, parseResult, sourceType, targetType, config));
+            w.WithCBlock($"public static {tgtType} MapTo<T>(this {srcType} source) where T : {tgtType}", w => MapToBody(w, parseResult, sourceType, targetType, config));
         }
 
         private static void MapToBody(

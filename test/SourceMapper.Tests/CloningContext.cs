@@ -1,6 +1,8 @@
-﻿namespace SourceMapper.Tests
+﻿using SomeCustomNamespace;
+
+namespace SourceMapper.Tests
 {
-    internal class TestCloningContext : SourceMapperContext
+    internal class CloningContext : SourceMapperContext
     {
         protected override void Configure(ContextConfig config)
         {
@@ -15,9 +17,6 @@
                 .Make<WithCloneablePropertyDto>(it => it
                     .Cloneable());
             config
-                .Make<TestClass>(it => it
-                    .MapTo<TestClassDto>());
-            config
                 .Make<ObjWithPostProcessFunc>(it => it
                     .Cloneable(cloning => cloning
                         .PostProcess(ObjWithPostProcessFunc.PostProc)));
@@ -25,6 +24,16 @@
                 .Make<LambdaPostProcObj>(it => it
                     .Cloneable(cloning => cloning
                         .PostProcess((ref LambdaPostProcObj a, LambdaPostProcObj b) => a.Prop = b.Prop + " Post Processed")));
+            config
+                .Make<FuncActivatorObj>(it => it
+                    .Cloneable(cloning => cloning
+                        .Activator(FuncActivatorObj.Create)));
+            config
+                .Make<LambdaActivatorObj>(it => it
+                    .Cloneable(cloning => cloning
+                        .Activator(src => new LambdaActivatorObj($"Custom Make Inst + {src.Prop}"))));
+            config.Make<ClassInSomeNamespace>(it => it
+                .Cloneable());
         }
     }
 }

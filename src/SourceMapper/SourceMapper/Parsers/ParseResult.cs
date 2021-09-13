@@ -57,7 +57,6 @@ namespace SourceMapper.Parsers
         }
 
         private readonly Dictionary<ITypeSymbol, ParserTypeInfo> parseInfos = new(SymbolEqualityComparer.Default);
-
         private readonly Dictionary<ITypeSymbol, MappingConfig> cloneables = new Dictionary<ITypeSymbol, MappingConfig>(SymbolEqualityComparer.Default);
         private readonly Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, MappingConfig>> mapables = new Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, Config.MappingConfig>>(SymbolEqualityComparer.Default);
 
@@ -71,9 +70,12 @@ namespace SourceMapper.Parsers
             .Concat(this.cloneables.Keys)
             .Distinct<ITypeSymbol>(SymbolEqualityComparer.Default);
 
-        public ParseResult(GeneratorExecutionContext generatorContext)
+        public string ContextName { get; private set; }
+
+        public ParseResult(GeneratorExecutionContext generatorContext, string contextName)
         {
             this.executionContext = generatorContext;
+            this.ContextName = contextName;
         }
 
         public void AddCloneable(ITypeSymbol type, MappingConfig config)
