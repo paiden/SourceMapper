@@ -17,6 +17,14 @@
             config
                 .Make<TestClass>(it => it
                     .MapTo<TestClassDto>());
+            config
+                .Make<ObjWithPostProcessFunc>(it => it
+                    .Cloneable(cloning => cloning
+                        .PostProcess(ObjWithPostProcessFunc.PostProc)));
+            config
+                .Make<LambdaPostProcObj>(it => it
+                    .Cloneable(cloning => cloning
+                        .PostProcess((ref LambdaPostProcObj a, LambdaPostProcObj b) => a.Prop = b.Prop + " Post Processed")));
         }
     }
 }

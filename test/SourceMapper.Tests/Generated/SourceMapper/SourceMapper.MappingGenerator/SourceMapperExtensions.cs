@@ -66,3 +66,40 @@ namespace SourceMapper.Tests
     }
 }
 
+namespace SourceMapper.Tests
+{
+    public static class ObjWithPostProcessFuncSourceMapperExtensions
+    {
+        public static ObjWithPostProcessFunc Clone(this ObjWithPostProcessFunc source)
+        {
+            var obj = new ObjWithPostProcessFunc()
+            {
+                Prop = source.Prop,
+            };
+
+            ObjWithPostProcessFunc.PostProc(ref obj, source);
+
+            return obj;
+        }
+    }
+}
+
+namespace SourceMapper.Tests
+{
+    public static class LambdaPostProcObjSourceMapperExtensions
+    {
+        public static LambdaPostProcObj Clone(this LambdaPostProcObj source)
+        {
+            var obj = new LambdaPostProcObj()
+            {
+                Prop = source.Prop,
+            };
+
+            var postProcess = (ref LambdaPostProcObj a, LambdaPostProcObj b) => a.Prop = b.Prop + " Post Processed";
+            postProcess(ref obj, source);
+
+            return obj;
+        }
+    }
+}
+

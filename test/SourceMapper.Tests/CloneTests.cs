@@ -33,5 +33,31 @@ namespace SourceMapper.Tests
             // Assert
             cloned.ShouldMatchSnapshot();
         }
+
+        [Fact]
+        public void WhenPostProcessingFuncSet_ExecutesItAfterStandardClone()
+        {
+            // Arrange
+            var src = new ObjWithPostProcessFunc() { Prop = "Not Post Processed" };
+
+            // Act
+            var cloned = src.Clone();
+
+            // Assert
+            cloned.ShouldMatchSnapshot();
+        }
+
+        [Fact]
+        public void WhenPostProcessingLambdaFuncSet_ExecutesItAfterStandardClone()
+        {
+            // Arrange
+            var src = new LambdaPostProcObj() { Prop = "Not Post Processed" };
+
+            // Act
+            var cloned = src.Clone();
+
+            // Assert
+            cloned.ShouldMatchSnapshot();
+        }
     }
 }

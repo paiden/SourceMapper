@@ -1,6 +1,8 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using CodegenCS;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SourceMapper.Config;
 using SourceMapper.Extensions;
 using SourceMapper.Parsers;
@@ -28,6 +30,12 @@ namespace SourceMapper.Codegen
                     w => WritePropertyAssignments(w, parseResult, sourceMappingInfo, config),
                     ";");
                 w.WriteLine();
+
+                if (config.PostProcess != null)
+                {
+                    WritePostProcessing(w, config.PostProcess);
+                }
+
                 w.WriteLine($"return obj;");
             }
         }
@@ -77,6 +85,23 @@ namespace SourceMapper.Codegen
             sb.Remove(sb.Length - 2, 2);
 
             return sb.ToString();
+        }
+
+        private static void WritePostProcessing(
+            CodegenTextWriter w,
+            ArgumentSyntax postProcessingArg)
+        {
+            if (postProcessingArg.ChildNodes().FirstOrDefault() is ParenthesizedLambdaExpressionSyntax lambda)
+            {
+                w.WriteLine($"var postProcess = {lambda};");
+                w.WriteLine("postProcess(ref obj, source);");
+            }
+            else
+            {
+                w.WriteLine($"{postProcessingArg}(ref obj, source);");
+            }
+
+            w.WriteLine();
         }
 
         private static string CloneCloneableProps(ParseResult parseResult, IPropertySymbol prop)

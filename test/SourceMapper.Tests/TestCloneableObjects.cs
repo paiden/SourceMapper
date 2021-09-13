@@ -11,6 +11,13 @@
 
     public class TestClassDto
     {
+        public static TestClassDto Source = new TestClassDto()
+        {
+            F = "Original F",
+            D = 1.0,
+            S = "Original S",
+        };
+
         public string F { get; set; }
 
         public double D { get; set; }
@@ -77,4 +84,20 @@
             InnerGetOnly = IgnorePropDto.Source,
         };
     }
+
+    public class ObjWithPostProcessFunc
+    {
+        public string Prop { get; set; }
+
+        public static void PostProc(ref ObjWithPostProcessFunc target, ObjWithPostProcessFunc src)
+        {
+            target.Prop = src.Prop + " Post Processed";
+        }
+    }
+
+    public class LambdaPostProcObj
+    {
+        public string Prop { get; set; } = "Ogiginal";
+    }
+
 }

@@ -4,30 +4,36 @@
 
 namespace SourceMapper
 {
-    interface IMapConfig<T, Target, Self>
+    internal delegate void PostProcessDelegate<TTarget, in TSource>(ref TTarget target, TSource source);
+
+    internal interface IMapConfig<T, TTarget, Self>
     {
         Self Ignore<P>(Func<T, P> propSelector);
+        Self PostProcess(PostProcessDelegate<TTarget, T> postProcess);
     }
 
-
-    public sealed class MapToConfig<T, Target> : IMapConfig<T, Target, MapToConfig<T, Target>>
+    internal sealed class MapToConfig<T, Target> : IMapConfig<T, Target, MapToConfig<T, Target>>
     {
         public MapToConfig<T, Target> Ignore<P>(Func<T, P> propertySelector) { return this; }
+
+        public MapToConfig<T, Target> PostProcess(PostProcessDelegate<Target, T> postProcess) { return this; }
     }
 
-    public sealed class CloneConfig<T> : IMapConfig<T, T, CloneConfig<T>>
+    internal sealed class CloneConfig<T> : IMapConfig<T, T, CloneConfig<T>>
     {
         public CloneConfig<T> Ignore<P>(Func<T, P> propertySelector) { return this; }
+
+        public CloneConfig<T> PostProcess(PostProcessDelegate<T, T> postProcess) { return this; }
     }
 
-    public sealed class MakeConfig<T>
+    internal sealed class MakeConfig<T>
     {
         public MakeConfig<T> Cloneable(Action<CloneConfig<T>>? config = null) { return this; }
 
         public MakeConfig<T> MapTo<Target>(Action<MapToConfig<T, Target>>? config = null) { return this; }
     }
 
-    public sealed class ContextConfig
+    internal sealed class ContextConfig
     {
         private ContextConfig()
         {
@@ -38,7 +44,7 @@ namespace SourceMapper
         public void Foo() { }
     }
 
-    public abstract class SourceMapperContext
+    internal abstract class SourceMapperContext
     {
         internal const string ConfigureName = nameof(Configure);
 
