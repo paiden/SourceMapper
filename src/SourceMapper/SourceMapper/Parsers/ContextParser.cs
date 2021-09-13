@@ -8,8 +8,6 @@ namespace SourceMapper.Parsers
 {
     internal static class ContextParser
     {
-
-
         public static void Parse(
             ParseResult parseResult,
             ParseContext parseContext,

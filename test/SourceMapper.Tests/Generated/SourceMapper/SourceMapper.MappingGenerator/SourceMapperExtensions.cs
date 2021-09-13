@@ -1,5 +1,23 @@
 ﻿namespace SourceMapper.Tests
 {
+    public static class TestClassSourceMapperExtensions
+    {
+        public static TestClass MapTo<T>(this TestClass source) where T : TestClassDto
+        {
+            var obj = new TestClass()
+            {
+                F = source.F,
+                D = source.D,
+                S = source.S,
+            };
+
+            return obj;
+        }
+    }
+}
+
+namespace SourceMapper.Tests
+{
     public static class IgnorePropDtoSourceMapperExtensions
     {
         public static IgnorePropDto Clone(this IgnorePropDto source)
@@ -45,31 +63,6 @@ namespace SourceMapper.Tests
 
             return obj;
         }
-    }
-}
-
-namespace SourceMapper.Tests
-{
-    public static class TestClassSourceMapperExtensions
-    {
-        public static TestClass MapTo<T>(this TestClass source) where T : TestClassDto
-        {
-            var obj = new TestClass()
-            {
-                F = source.F,
-                D = source.D,
-                S = source.S,
-            };
-
-            return obj;
-        }
-    }
-}
-
-namespace SourceMapper.Tests
-{
-    public static class TestClassDtoSourceMapperExtensions
-    {
     }
 }
 
