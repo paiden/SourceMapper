@@ -2,7 +2,7 @@
 {
     internal class TestCloningContext : SourceMapperContext
     {
-        protected override void Configure(MappingConfig config)
+        protected override void Configure(ContextConfig config)
         {
             config
                 .Make<IgnorePropDto>(it => it
@@ -14,7 +14,9 @@
             config
                 .Make<WithCloneablePropertyDto>(it => it
                     .Cloneable());
-
+            config
+                .Make<TestClass>(it => it
+                    .MapTo<TestClassDto>());
         }
     }
 }

@@ -4,7 +4,18 @@
 
 namespace SourceMapper
 {
-    public sealed class CloneConfig<T>
+    interface IMapConfig<T, Target, Self>
+    {
+        Self Ignore<P>(Func<T, P> propSelector);
+    }
+
+
+    public sealed class MapToConfig<T, Target> : IMapConfig<T, Target, MapToConfig<T, Target>>
+    {
+        public MapToConfig<T, Target> Ignore<P>(Func<T, P> propertySelector) { return this; }
+    }
+
+    public sealed class CloneConfig<T> : IMapConfig<T, T, CloneConfig<T>>
     {
         public CloneConfig<T> Ignore<P>(Func<T, P> propertySelector) { return this; }
     }
@@ -12,16 +23,17 @@ namespace SourceMapper
     public sealed class MakeConfig<T>
     {
         public MakeConfig<T> Cloneable(Action<CloneConfig<T>>? config = null) { return this; }
+
+        public MakeConfig<T> MapTo<Target>(Action<MapToConfig<T, Target>>? config = null) { return this; }
     }
 
-
-    public sealed class MappingConfig
+    public sealed class ContextConfig
     {
-        private MappingConfig()
+        private ContextConfig()
         {
         }
 
-        public MappingConfig Make<T>(Action<MakeConfig<T>> it) { return this; }
+        public ContextConfig Make<T>(Action<MakeConfig<T>> it) { return this; }
 
         public void Foo() { }
     }
@@ -30,6 +42,6 @@ namespace SourceMapper
     {
         internal const string ConfigureName = nameof(Configure);
 
-        protected abstract void Configure(MappingConfig config);
+        protected abstract void Configure(ContextConfig config);
     }
 }

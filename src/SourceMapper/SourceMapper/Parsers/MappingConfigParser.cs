@@ -6,29 +6,30 @@ using SourceMapper.Utils;
 
 namespace SourceMapper.Parsers
 {
-    internal static class CloneableConfigParser
+    internal static class MappingConfigParser
     {
-        public static void Parse(
+        public static MappingConfig Parse(
             ParseResult parseResult,
             ParseContext parseContext,
-            ITypeSymbol cloneType,
-            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) cloneableCall)
+            ITypeSymbol sourceType,
+            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) mappingCall)
         {
-            var cloneableConfig = new CloneableConfig();
-            var (syntax, symbol) = cloneableCall;
-            var ignoreCalls = ParseUtils.FindCallsOfMethodWithName(parseContext, syntax, nameof(CloneConfig<object>.Ignore));
+            var mapConfig = new MappingConfig();
+            var (syntax, symbol) = mappingCall;
+            var ignoreCalls = ParseUtils.FindCallsOfMethodWithName(
+                parseContext, syntax, nameof(IMapConfig<object, object, object>.Ignore));
 
             foreach (var ign in ignoreCalls)
             {
-                ParseIgnoreCall(parseResult, cloneableConfig, cloneType, ign);
+                ParseIgnoreCall(parseResult, mapConfig, sourceType, ign);
             }
 
-            parseResult.AddCloneable(cloneType, cloneableConfig);
+            return mapConfig;
         }
 
         private static void ParseIgnoreCall(
             ParseResult parseResult,
-            CloneableConfig clonableConfig,
+            MappingConfig clonableConfig,
             ITypeSymbol cloneableType,
             (InvocationExpressionSyntax syntax, IMethodSymbol symbol) ignoreCall)
         {

@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace SourceMapper.Config
 {
-    public sealed class CloneableConfig
+    public sealed class MappingConfig
     {
         private readonly HashSet<IPropertySymbol> ignoredProps = new(SymbolEqualityComparer.Default);
 

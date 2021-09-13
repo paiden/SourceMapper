@@ -4,12 +4,12 @@
     {
         public static IgnorePropDto Clone(this IgnorePropDto source)
         {
-            var clone = new IgnorePropDto()
+            var obj = new IgnorePropDto()
             {
                 CloneMe = source.CloneMe,
             };
 
-            return clone;
+            return obj;
         }
     }
 }
@@ -20,13 +20,13 @@ namespace SourceMapper.Tests
     {
         public static VisiblityDto Clone(this VisiblityDto source)
         {
-            var clone = new VisiblityDto()
+            var obj = new VisiblityDto()
             {
                 PublicString = source.PublicString,
                 InternalString = source.InternalString,
             };
 
-            return clone;
+            return obj;
         }
     }
 }
@@ -37,14 +37,39 @@ namespace SourceMapper.Tests
     {
         public static WithCloneablePropertyDto Clone(this WithCloneablePropertyDto source)
         {
-            var clone = new WithCloneablePropertyDto(source.InnerGetOnly.Clone())
+            var obj = new WithCloneablePropertyDto(source.InnerGetOnly.Clone())
             {
                 Prop = source.Prop,
                 Inner = source.Inner.Clone(),
             };
 
-            return clone;
+            return obj;
         }
+    }
+}
+
+namespace SourceMapper.Tests
+{
+    public static class TestClassSourceMapperExtensions
+    {
+        public static TestClass MapTo<T>(this TestClass source) where T : TestClassDto
+        {
+            var obj = new TestClass()
+            {
+                F = source.F,
+                D = source.D,
+                S = source.S,
+            };
+
+            return obj;
+        }
+    }
+}
+
+namespace SourceMapper.Tests
+{
+    public static class TestClassDtoSourceMapperExtensions
+    {
     }
 }
 

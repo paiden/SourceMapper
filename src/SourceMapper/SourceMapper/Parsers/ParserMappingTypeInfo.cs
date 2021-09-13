@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace SourceMapper.Parsers
 {
-    public class CloneableParserTypeInfo
+    public class ParserMappingTypeInfo
     {
         private readonly ParserTypeInfo generic;
 
@@ -17,7 +17,7 @@ namespace SourceMapper.Parsers
 
         public IReadOnlyList<IPropertySymbol> AssignmentProps { get; private set; }
 
-        private CloneableParserTypeInfo(
+        private ParserMappingTypeInfo(
             ParserTypeInfo generic,
             IMethodSymbol? bestConstructor,
             IReadOnlyList<IPropertySymbol> constructionProps,
@@ -29,12 +29,12 @@ namespace SourceMapper.Parsers
             this.AssignmentProps = assignmentProps;
         }
 
-        public static CloneableParserTypeInfo Create(ParserTypeInfo info)
+        public static ParserMappingTypeInfo Create(ParserTypeInfo info)
         {
             var constructionProps = new List<IPropertySymbol>(16);
             var best = FindBestCloneConstructor(info.Constructors, info.Properties, ref constructionProps);
             var assignmentProps = info.Properties.Except(constructionProps).ToList();
-            return new CloneableParserTypeInfo(info, best, constructionProps, assignmentProps);
+            return new ParserMappingTypeInfo(info, best, constructionProps, assignmentProps);
         }
 
         private static IMethodSymbol? FindBestCloneConstructor(

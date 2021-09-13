@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using SourceMapper.Generators;
+using SourceMapper.Codegen;
 using SourceMapper.Parsers;
 using SourceMapper.Utils;
 
@@ -53,28 +53,11 @@ namespace SourceMapper
             ContextParser.Parse(parseResult, parseContext, sourceMapperContext);
             foreach (var t in parseResult.ConfiguredTypes)
             {
-                GenerateExtensionsClass(writer, parseResult, t);
+                ExtensionsClassCodeGen.GenerateExtensionsClass(writer, parseResult, t);
             }
         }
 
-        private static void GenerateExtensionsClass(
-            CodegenTextWriter writer,
-            ParseResult parseResult,
-            ITypeSymbol targetType)
-        {
-            writer.WithCBlock($"namespace {targetType.ContainingNamespace.ToDisplayString()}", ExtensionClassDeclaration);
-            writer.WriteLine();
 
-            void ExtensionClassDeclaration(CodegenTextWriter w)
-            {
-                w.WithCBlock($"public static class {targetType.Name}SourceMapperExtensions", ExtensionClassBody);
-            }
-
-            void ExtensionClassBody(CodegenTextWriter writer)
-            {
-                CloneableCodeGen.Generate(writer, parseResult, targetType);
-            }
-        }
 
         public void Initialize(GeneratorInitializationContext context)
         {

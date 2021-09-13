@@ -42,7 +42,7 @@ namespace SourceMapper.Parsers
             DbgUtils.LaunchDebugger();
             var cloneables = new List<TypeInfo>();
 
-            var makeCalls = ParseUtils.FindCallsOfMethodWithName(parseContext, syntax, nameof(MappingConfig.Make));
+            var makeCalls = ParseUtils.FindCallsOfMethodWithName(parseContext, syntax, nameof(ContextConfig.Make));
 
             foreach (var make in makeCalls)
             {
@@ -58,7 +58,7 @@ namespace SourceMapper.Parsers
             var calls = configureDeclaration.DescendantNodes()
                 .OfType<InvocationExpressionSyntax>()
                 .Select(n => (node: n, symbol: TryGetMethodSymbolInfo(parseContext, n)))
-                .Where(tpl => tpl.symbol != null && tpl.symbol.Name.Equals(nameof(MappingConfig.Make)))
+                .Where(tpl => tpl.symbol != null && tpl.symbol.Name.Equals(nameof(ContextConfig.Make)))
                 .ToList();
 
             static IMethodSymbol? TryGetMethodSymbolInfo(ParseContext context, SyntaxNode n)

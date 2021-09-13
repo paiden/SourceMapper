@@ -7,7 +7,7 @@ namespace SourceMapper.Parsers
 {
     public class ParserTypeInfo
     {
-        private readonly Lazy<CloneableParserTypeInfo> lazyCloneableInfo;
+        private readonly Lazy<ParserMappingTypeInfo> lazyCloneableInfo;
 
         public string TypeName { get; }
 
@@ -15,7 +15,7 @@ namespace SourceMapper.Parsers
 
         public IReadOnlyList<IPropertySymbol> Properties { get; }
 
-        public CloneableParserTypeInfo GetCloneableInfo() => this.lazyCloneableInfo.Value;
+        public ParserMappingTypeInfo GetCloneableInfo() => this.lazyCloneableInfo.Value;
 
         public ParserTypeInfo(string typeName, IEnumerable<IPropertySymbol> properties, IEnumerable<IMethodSymbol> constructors)
         {
@@ -25,7 +25,7 @@ namespace SourceMapper.Parsers
             this.lazyCloneableInfo = new(this.InitCloneableInfo);
         }
 
-        private CloneableParserTypeInfo InitCloneableInfo()
-            => CloneableParserTypeInfo.Create(this);
+        private ParserMappingTypeInfo InitCloneableInfo()
+            => ParserMappingTypeInfo.Create(this);
     }
 }

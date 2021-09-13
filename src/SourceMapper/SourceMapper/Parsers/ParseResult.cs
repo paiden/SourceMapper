@@ -56,11 +56,14 @@ namespace SourceMapper.Parsers
         }
 
         private readonly Dictionary<ITypeSymbol, ParserTypeInfo> parseInfos = new(SymbolEqualityComparer.Default);
-        private readonly Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, CloneableConfig>> mappings = new Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, CloneableConfig>>(SymbolEqualityComparer.Default);
+
+        private readonly Dictionary<ITypeSymbol, MappingConfig> cloneables = new Dictionary<ITypeSymbol, MappingConfig>(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, Config.MappingConfig>> mapables = new Dictionary<ITypeSymbol, Dictionary<ITypeSymbol, Config.MappingConfig>>(SymbolEqualityComparer.Default);
 
         public Dictionary<ITypeSymbol, ParserTypeInfo> ParseInfos => parseInfos;
 
-        public IReadOnlyDictionary<ITypeSymbol, Dictionary<ITypeSymbol, CloneableConfig>> Mappings => this.mappings;
+        public IReadOnlyDictionary<ITypeSymbol, MappingConfig> Cloneables => this.cloneables;
+        public IReadOnlyDictionary<ITypeSymbol, Dictionary<ITypeSymbol, MappingConfig>> Mapables => this.mapables;
 
         public IEnumerable<ITypeSymbol> ConfiguredTypes => this.ParseInfos.Keys;
 
@@ -69,20 +72,35 @@ namespace SourceMapper.Parsers
             this.executionContext = generatorContext;
         }
 
-        public void AddCloneable(ITypeSymbol type, CloneableConfig config)
+        public void AddCloneable(ITypeSymbol type, MappingConfig config)
         {
             if (!this.ParseInfos.ContainsKey(type))
             {
                 this.EnsureHasTypeInfo(type);
             }
 
-            if (!this.mappings.TryGetValue(type, out var targetTypes))
+            this.cloneables.Add(type, config);
+        }
+
+        public void AddMappable(ITypeSymbol source, ITypeSymbol target, MappingConfig config)
+        {
+            if (!this.ParseInfos.ContainsKey(source))
             {
-                targetTypes = new Dictionary<ITypeSymbol, CloneableConfig>(SymbolEqualityComparer.Default);
-                this.mappings.Add(type, targetTypes);
+                this.EnsureHasTypeInfo(source);
             }
 
-            targetTypes.Add(type, config);
+            if (!this.ParseInfos.ContainsKey(target))
+            {
+                this.EnsureHasTypeInfo(target);
+            }
+
+            if (!this.mapables.TryGetValue(source, out var targetTypes))
+            {
+                targetTypes = new Dictionary<ITypeSymbol, MappingConfig>(SymbolEqualityComparer.Default);
+                this.mapables.Add(source, targetTypes);
+            }
+
+            targetTypes.Add(target, config);
         }
 
         public void Report(DiagnosticDescriptor descriptor, Location? location, params object[] msgArgs)
