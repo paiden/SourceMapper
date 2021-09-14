@@ -8,17 +8,17 @@ namespace SourceMapper.Parsers
     {
         public static void Parse(ParseResult result, ParseContext parseContext, (InvocationExpressionSyntax syntax, IMethodSymbol symbol) makeCall)
         {
-            var (syntax, symbol) = makeCall;
+            var (_, symbol) = makeCall;
             ITypeSymbol makeType = symbol.TypeArguments[0]!;
 
-            var cloneableCalls = ParseUtils.FindCallsOfMethodWithName(parseContext, syntax, nameof(MakeConfig<object>.Cloneable));
+            var cloneableCalls = ParseUtils.FindCallsOfMethodInConfigLambda(parseContext, makeCall, nameof(MakeConfig<object>.Cloneable));
             foreach (var clone in cloneableCalls)
             {
                 var config = MappingConfigParser.Parse(result, parseContext, makeType, clone);
                 result.AddCloneable(makeType, config);
             }
 
-            var mapToCalls = ParseUtils.FindCallsOfMethodWithName(parseContext, syntax, nameof(MakeConfig<object>.MapTo));
+            var mapToCalls = ParseUtils.FindCallsOfMethodInConfigLambda(parseContext, makeCall, nameof(MakeConfig<object>.MapTo));
             foreach (var map in mapToCalls)
             {
                 var targetType = map.symbol.TypeArguments[0]!;

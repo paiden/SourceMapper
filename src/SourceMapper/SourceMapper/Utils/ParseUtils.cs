@@ -32,5 +32,15 @@ namespace SourceMapper.Utils
 
             return calls;
         }
+
+        internal static IReadOnlyList<(InvocationExpressionSyntax syntax, IMethodSymbol symbol)> FindCallsOfMethodInConfigLambda(
+            ParseContext context,
+            (InvocationExpressionSyntax syntax, IMethodSymbol symbol)
+            invocation, string name)
+        {
+            var (syntax, _) = invocation;
+            var configLambda = syntax.ArgumentList.Arguments[0];
+            return FindCallsOfMethodWithName(context, configLambda, name);
+        }
     }
 }
