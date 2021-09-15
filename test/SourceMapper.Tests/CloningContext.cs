@@ -7,15 +7,12 @@ namespace SourceMapper.Tests
         protected override void Configure(ContextConfig config)
         {
             config
+                .Make<VisiblityDto>(it => it.Cloneable())
+                .Make<WithCloneablePropertyDto>(it => it.Cloneable());
+            config
                 .Make<IgnorePropDto>(it => it
                     .Cloneable(cloning => cloning
                         .Ignore(x => x.IgnoreMe)));
-            config
-                .Make<VisiblityDto>(it => it
-                    .Cloneable());
-            config
-                .Make<WithCloneablePropertyDto>(it => it
-                    .Cloneable());
             config
                 .Make<ObjWithPostProcessFunc>(it => it
                     .Cloneable(cloning => cloning
