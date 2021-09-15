@@ -17,8 +17,9 @@ namespace SourceMapper.Codegen
 
             void ExtensionClassDeclaration(CodegenTextWriter w)
             {
+                var accDecl = AccDecl(makeType.DeclaredAccessibility);
                 w.WithCBlock(
-                    beforeBlock: $"public static class {makeType.Name}{parseResult.ContextName}SourceMapperExtensions",
+                    beforeBlock: $"{accDecl} static class {makeType.Name}{parseResult.ContextName}SourceMapperExtensions",
                     innerBlockAction: ExtensionClassBody);
             }
 
@@ -42,5 +43,8 @@ namespace SourceMapper.Codegen
                 }
             }
         }
+
+        private static string AccDecl(Accessibility acc)
+            => acc == Accessibility.Public ? "public" : "internal";
     }
 }

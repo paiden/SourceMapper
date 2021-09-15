@@ -1,4 +1,5 @@
 ﻿using SomeCustomNamespace;
+using SourceMapper.Tests.CloneTestObjects;
 
 namespace SourceMapper.Tests
 {
@@ -6,6 +7,7 @@ namespace SourceMapper.Tests
     {
         protected override void Configure(ContextConfig config)
         {
+            config.Make<InternalCloneable>(it => it.Cloneable());
             config
                 .Make<VisiblityDto>(it => it.Cloneable())
                 .Make<WithCloneablePropertyDto>(it => it.Cloneable());
