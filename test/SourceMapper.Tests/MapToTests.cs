@@ -1,4 +1,5 @@
 ﻿using Snapper;
+using SourceMapper.Tests.MappingTestObjects;
 using Xunit;
 
 namespace SourceMapper.Tests
@@ -13,6 +14,19 @@ namespace SourceMapper.Tests
 
             // Act
             var mapped = src.MapTo<FuncActivatorObj>();
+
+            // Assert
+            mapped.ShouldMatchSnapshot();
+        }
+
+        [Fact]
+        public void WhenTargetMissesProp_OtherPropIsStillMapped()
+        {
+            // Arrange
+            var src = new MissingTgtPropSource();
+
+            // Act
+            var mapped = src.MapTo<MissingTgtPropTarget>();
 
             // Assert
             mapped.ShouldMatchSnapshot();

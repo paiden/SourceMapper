@@ -27,7 +27,7 @@ namespace SourceMapper.Codegen
                 w.WriteLine(GenerateMakeInstance(parseResult, config, target, sourceMappingInfo));
                 w.WriteLine();
 
-                var written = WritePropertyAssignments(w, parseResult, sourceMappingInfo, config);
+                var written = WritePropertyAssignments(w, parseResult, target, sourceMappingInfo, config);
                 if (written > 0)
                 {
                     w.WriteLine();
@@ -73,13 +73,14 @@ namespace SourceMapper.Codegen
         private static int WritePropertyAssignments(
             CodegenTextWriter w,
             ParseResult parseResult,
-            ParserMappingTypeInfo cloneable,
+            ParserTypeInfo target,
+            ParserMappingTypeInfo mapable,
             MappingConfig config)
         {
             int written = 0;
-            foreach (var p in cloneable.AssignmentProps)
+            foreach (var p in mapable.AssignmentProps)
             {
-                if (config.IsIgnored(p))
+                if(!IsMapableProperty(target, config, p, out var targetProp))
                 {
                     continue;
                 }
@@ -129,6 +130,23 @@ namespace SourceMapper.Codegen
             {
                 w.WriteLine($"{postProcessingArg}(ref obj, source);");
             }
+        }
+
+        private static bool IsMapableProperty(
+            ParserTypeInfo target,
+            MappingConfig config,
+            IPropertySymbol property,
+            out IPropertySymbol? targetProp)
+        {
+            targetProp = null;
+            if (config.IsIgnored(property))
+            {
+                return false;
+            }
+
+            targetProp = target.Properties.FirstOrDefault(p => p.Name.Equals(property.Name));
+            return targetProp != null;
+
         }
 
         private static string CloneCloneableProps(ParseResult parseResult, IPropertySymbol prop)

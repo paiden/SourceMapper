@@ -20,12 +20,12 @@ namespace SourceMapper.Samples
     {
         protected override void Configure(ContextConfig config)
         {
-            config
-                .Make<PostProcessSource>(it => it
-                    .MapTo<PostProcessTarget>(mapping => mapping
-                        .Ignore(src => src.A)
-                        .Ignore(src => src.B)
-                        .PostProcess((ref PostProcessTarget tgt, PostProcessSource src) => tgt.AB = src.A + src.B)));
+            //config
+            //    .Make<PostProcessSource>(it => it
+            //        .MapTo<PostProcessTarget>(mapping => mapping
+            //            .Ignore(src => src.A)
+            //            .Ignore(src => src.B)
+            //            .PostProcess((ref PostProcessTarget tgt, PostProcessSource src) => tgt.AB = src.A + src.B)));
         }
     }
 }

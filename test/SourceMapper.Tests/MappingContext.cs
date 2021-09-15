@@ -1,4 +1,6 @@
-﻿namespace SourceMapper.Tests
+﻿using SourceMapper.Tests.MappingTestObjects;
+
+namespace SourceMapper.Tests
 {
     internal class MappingContext : SourceMapperContext
     {
@@ -10,6 +12,8 @@
             config.Make<LambdaActivatorObj>(it => it
                 .MapTo<FuncActivatorObj>(map => map
                     .Activator(x => new FuncActivatorObj($"Custom Activator Lambda + {x.Prop}"))));
+            config.Make<MissingTgtPropSource>(it => it
+                .MapTo<MissingTgtPropTarget>());
         }
     }
 }
