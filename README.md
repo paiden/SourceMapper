@@ -89,7 +89,7 @@ namespace Samples
 
 Mapping will map a object of some type to another type. If public get/set property names match the property will be 
 assigned from the source property to the target property. If the source property type is cloneable, a clone will be 
-assigned otherwiese direct reference assignment will be done.
+assigned otherwise direct reference assignment will be done.
 
 ```csharp
     // Input Objects
@@ -216,4 +216,4 @@ Generated code:
 # Post Processing 
 
 # Build and Test
-Checkout repository, open with VS2022+ and copile the project.
+Checkout repository, open with VS2022+ and compile the project.
