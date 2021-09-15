@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IncludeBuildOutput>false</IncludeBuildOutput><!-- Do not include the generator as a lib dependency -->
-    <VersionPrefix>0.1.1</VersionPrefix>
+    <VersionPrefix>0.1.0</VersionPrefix>
     <LangVersion>latest</LangVersion>
     <IsRoslynComponent>true</IsRoslynComponent>
     <Nullable>enable</Nullable>

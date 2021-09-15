@@ -25,23 +25,26 @@ namespace SourceMapper
                 .GetManifestResourceStream("SourceMapper.SourceMapperContext.cs.txt");
             var reader = new StreamReader(contextCodeStream);
             var codeText = reader.ReadToEnd();
-            context.AddSource("SourceMapperContext", SourceText.From(codeText, Encoding.UTF8));
+            context.AddSource("SourceMapperContext.g", SourceText.From(codeText, Encoding.UTF8));
 
             // Write the genreated code based on target configured contexts
             var myCompilation = AddSourceMapperContextToCompilation(context.Compilation, codeText);
 
-            var extensionsWriter = new CodegenTextWriter();
             foreach (var sourceMapperContext in receiver.Candidates)
             {
+                var extensionsWriter = new CodegenTextWriter();
+
+                extensionsWriter.WriteLine("using System;");
+                extensionsWriter.WriteLine();
+
                 DbgUtils.LaunchDebugger(true);
                 var unitSyntax = sourceMapperContext.FirstAncestorOrSelf<CompilationUnitSyntax>();
                 var semanticModel = myCompilation.GetSemanticModel(unitSyntax!.SyntaxTree);
                 var parseContext = new ParseContext(myCompilation, semanticModel);
                 var result = new ParseResult(context, sourceMapperContext.Identifier.ValueText);
                 ProcessContext(result, parseContext, extensionsWriter, sourceMapperContext);
+                context.AddSource(result.ContextName + ".g", SourceText.From(extensionsWriter.GetContents(), Encoding.UTF8));
             }
-
-            context.AddSource("SourceMapperExtensions", SourceText.From(extensionsWriter.GetContents(), Encoding.UTF8));
         }
 
         private static void ProcessContext(
@@ -56,8 +59,6 @@ namespace SourceMapper
                 ExtensionsClassCodeGen.GenerateExtensionsClass(writer, parseResult, t);
             }
         }
-
-
 
         public void Initialize(GeneratorInitializationContext context)
         {
