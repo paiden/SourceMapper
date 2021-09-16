@@ -12,28 +12,27 @@ namespace SourceMapper.Parsers
             ParseResult parseResult,
             ParseContext parseContext,
             ITypeSymbol sourceType,
-            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) mappingCall)
+            CallInfo mappingCall)
         {
             var mapConfig = new MappingConfig();
-            var (syntax, symbol) = mappingCall;
-            var ignoreCalls = ParseUtils.FindCallsOfMethodWithName(
-                parseContext, syntax, nameof(IMapConfig<object, object, object>.Ignore));
+            var ignoreCalls = ParseUtils.FindCallsOfMethodInConfigLambda(
+                parseContext, mappingCall, nameof(IMapConfig<object, object, object>.Ignore), optional: true);
 
             foreach (var ign in ignoreCalls)
             {
                 ParseIgnoreCall(parseResult, mapConfig, sourceType, ign);
             }
 
-            var postProcessCalls = ParseUtils.FindCallsOfMethodWithName(
-                parseContext, syntax, nameof(IMapConfig<object, object, object>.PostProcess));
+            var postProcessCalls = ParseUtils.FindCallsOfMethodInConfigLambda(
+                parseContext, mappingCall, nameof(IMapConfig<object, object, object>.PostProcess), optional: true);
 
             foreach (var pp in postProcessCalls)
             {
                 ParsePostProcessCall(parseResult, mapConfig, sourceType, pp);
             }
 
-            var activatorCalls = ParseUtils.FindCallsOfMethodWithName(
-                parseContext, syntax, nameof(IMapConfig<object, object, object>.Activator));
+            var activatorCalls = ParseUtils.FindCallsOfMethodInConfigLambda(
+                parseContext, mappingCall, nameof(IMapConfig<object, object, object>.Activator), optional: true);
 
             foreach (var ac in activatorCalls)
             {
@@ -47,9 +46,9 @@ namespace SourceMapper.Parsers
             ParseResult parseResult,
             MappingConfig mapableConfig,
             ITypeSymbol cloneableType,
-            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) ignoreCall)
+            CallInfo ignoreCall)
         {
-            var ignoreIdentifier = ignoreCall.syntax.DescendantNodes()
+            var ignoreIdentifier = ignoreCall.Invocation.DescendantNodes()
                 .OfType<IdentifierNameSyntax>()
                 .Last(); // The last identifier is the prop name.... maybe add nicer parse logic in future but for now this works.
 
@@ -71,14 +70,13 @@ namespace SourceMapper.Parsers
             ParseResult parseResult,
             MappingConfig mapableConfig,
             ITypeSymbol mapableType,
-            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) postProcessCall)
+            CallInfo postProcessCall)
         {
-            var (syntax, symbol) = postProcessCall;
-            var arg = syntax.DescendantNodes().OfType<ArgumentListSyntax>().FirstOrDefault();
+            var arg = postProcessCall.ArgumentList;
 
             if (arg == null || arg.Arguments.Count <= 0)
             {
-                parseResult.Report(ParseResult.Diag.SM9999GenericError, syntax.GetLocation(), "Could not find post process func.");
+                parseResult.Report(ParseResult.Diag.SM9999GenericError, postProcessCall.Invocation.GetLocation(), "Could not find post process func.");
                 return;
             }
 
@@ -89,14 +87,13 @@ namespace SourceMapper.Parsers
             ParseResult parseResult,
             MappingConfig mapableConfig,
             ITypeSymbol mapableType,
-            (InvocationExpressionSyntax syntax, IMethodSymbol symbol) activatorCall)
+            CallInfo activatorCall)
         {
-            var (syntax, symbol) = activatorCall;
-            var arg = syntax.DescendantNodes().OfType<ArgumentListSyntax>().FirstOrDefault();
+            var arg = activatorCall.ArgumentList;
 
             if (arg == null || arg.Arguments.Count <= 0)
             {
-                parseResult.Report(ParseResult.Diag.SM9999GenericError, syntax.GetLocation(), "Could not find activator func.");
+                parseResult.Report(ParseResult.Diag.SM9999GenericError, activatorCall.Invocation.GetLocation(), "Could not find activator func.");
                 return;
             }
 

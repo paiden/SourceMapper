@@ -7,7 +7,25 @@ advanced code based configuration systems for these.
 
 # Getting Started
 
+1. Make sure you use VS2022 with Latest C# Language version
+2. Install the [Source Mapper Nuget Package](https://www.nuget.org/packages/SourceMapper)
+3. Configure a SourceMapper Context to auto generate Cloning/Mapping extension methods (see Configuration section below)
 
+# Configuration
+
+SourceMapper different to many other source generators does not use a Attribute based linking of user and generated code.
+SourceMapper uses a fluent style code configuration system. 
+
+The fluent code is not real code but instead is only lightweight compiler checked configuration code that will be parsed
+by the source generator. You should not split it into helper methods etc. as this will definitely break parser logic.
+
+The examples below should outline, what valid configurations look like.
+
+Reasons to use this system: 
+
+- Better extensibility than attributes
+- No modification of mapped types needed
+- All configuration in one place
 
 ## Make a object deep cloneable 
 
@@ -214,6 +232,48 @@ Generated code:
 ```
 
 # Post Processing 
+
+```csharp
+    // Input Objects
+    public class PostProcessSource
+    {
+        public string A { get; set; }
+        public string B { get; set; }
+    }
+
+    public class PostProcessTarget { public string AB { get; set; } }
+
+    // Configuration
+    internal class PostProcessSampleContext : SourceMapperContext
+    {
+        protected override void Configure(ContextConfig config)
+        {
+            config
+                .Make<PostProcessSource>(it => it
+                    .MapTo<PostProcessTarget>(mapping => mapping
+                        .Ignore(src => src.A)
+                        .Ignore(src => src.B)
+                        .PostProcess((ref PostProcessTarget tgt, PostProcessSource src) => tgt.AB = src.A + src.B)));
+        }
+    }
+```
+
+Generated code
+
+```csharp
+    public static class PostProcessSourcePostProcessSampleContextSourceMapperExtensions
+    {
+        public static PostProcessTarget MapTo<T>(this PostProcessSource source) where T : PostProcessTarget
+        {
+            var obj = new PostProcessTarget();
+
+            var postProcess = (ref PostProcessTarget tgt, PostProcessSource src) => tgt.AB = src.A + src.B;
+            postProcess(ref obj, source);
+
+            return obj;
+        }
+    }
+```
 
 # Build and Test
 Checkout repository, open with VS2022+ and compile the project.

@@ -4,10 +4,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IncludeBuildOutput>false</IncludeBuildOutput><!-- Do not include the generator as a lib dependency -->
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionPrefix>0.1.1</VersionPrefix>
     <LangVersion>latest</LangVersion>
     <IsRoslynComponent>true</IsRoslynComponent>
     <Nullable>enable</Nullable>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>source generator;automapper;cloning;clone;mapping</PackageTags>
+    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <Description>.Net source generator to generate code that creates mapping extensions for objects. Its like Automapper, but at compile time.</Description>
+    <PackageProjectUrl>https://github.com/paiden/SourceMapper</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/paiden/SourceMapper</RepositoryUrl>
+    <Authors>paiden</Authors>
   </PropertyGroup>
 
   <ItemGroup>

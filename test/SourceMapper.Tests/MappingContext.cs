@@ -7,6 +7,12 @@ namespace SourceMapper.Tests
         protected override void Configure(ContextConfig config)
         {
             config
+            .Make<CombinePropSource>(it => it
+                .MapTo<CombinePropTarget>(mapping => mapping
+                    .Ignore(src => src.A)
+                    .Ignore(src => src.B)
+                    .PostProcess((ref CombinePropTarget tgt, CombinePropSource src) => tgt.AB = src.A + src.B)));
+            config
                 .Make<TestClass>(it => it
                 .MapTo<TestClassDto>());
             config.Make<LambdaActivatorObj>(it => it

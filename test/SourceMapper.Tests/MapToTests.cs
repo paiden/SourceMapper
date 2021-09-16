@@ -31,5 +31,18 @@ namespace SourceMapper.Tests
             // Assert
             mapped.ShouldMatchSnapshot();
         }
+
+        [Fact]
+        public void WhenPropCombinedViaLambda_PropHasCorrectValue()
+        {
+            // Arrange
+            var src = new CombinePropSource();
+
+            // Act
+            var mapped = src.MapTo<CombinePropTarget>();
+
+            // Assert
+            mapped.ShouldMatchSnapshot();
+        }
     }
 }
